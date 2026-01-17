@@ -6,4 +6,8 @@
     </style>
 
     <style name="Theme.BEACON" parent="Base.Theme.BEACON" />
+    <style name="Theme.SafeTrigger" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/purple_500</item>
+    </style>
 </resources>

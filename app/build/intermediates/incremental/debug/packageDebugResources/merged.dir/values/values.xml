@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="purple_500">#6200EE</color>
+    <color name="purple_700">#3700B3</color>
+    <color name="teal_200">#03DAC5</color>
+    <color name="teal_700">#018786</color>
+    <color name="white">#FFFFFFFF</color>
+    <string name="app_name">SafeTrigger</string>
+    <string name="emergency">🚨 Emergency</string>
+    <string name="gcm_defaultSenderId" translatable="false">916258029582</string>
+    <string name="google_api_key" translatable="false">AIzaSyDX3xSHhVp9ZVDqrtc3T5X44bdTNg-J2yA</string>
+    <string name="google_app_id" translatable="false">1:916258029582:android:78e06095ccf8fd7f087c5f</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDX3xSHhVp9ZVDqrtc3T5X44bdTNg-J2yA</string>
+    <string name="google_storage_bucket" translatable="false">beacon-5db4f.firebasestorage.app</string>
+    <string name="project_id" translatable="false">beacon-5db4f</string>
+    <string name="simulate_emergency">Simulate Emergency</string>
+    <style name="Base.Theme.BEACON" parent="Theme.Material3.DayNight.NoActionBar">
+        
+        
+    </style>
+    <style name="Theme.BEACON" parent="Base.Theme.BEACON"/>
+    <style name="Theme.SafeTrigger" parent="Theme.Material3.DayNight.NoActionBar">
+        
+        <item name="colorPrimary">@color/purple_500</item>
+    </style>
+</resources>
