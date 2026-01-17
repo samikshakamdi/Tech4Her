@@ -12,10 +12,12 @@ id btnAddContact
 id btnEmergency
 id btnMic
 id btnSave
-id btnSimulateEmergency
+id btnSaveKeyword
+id etKeyword
 id etName
 id etPhone
 id tvContacts
+id tvHeading
 layout activity_add_contact
 layout activity_main
 mipmap ic_launcher

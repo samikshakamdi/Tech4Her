@@ -6,14 +6,14 @@
     <color name="teal_200">#03DAC5</color>
     <color name="teal_700">#018786</color>
     <color name="white">#FFFFFFFF</color>
-    <string name="app_name">SafeTrigger</string>
+    <string name="app_name">BEACON</string>
     <string name="emergency">🚨 Emergency</string>
-    <string name="gcm_defaultSenderId" translatable="false">916258029582</string>
-    <string name="google_api_key" translatable="false">AIzaSyDX3xSHhVp9ZVDqrtc3T5X44bdTNg-J2yA</string>
-    <string name="google_app_id" translatable="false">1:916258029582:android:78e06095ccf8fd7f087c5f</string>
-    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDX3xSHhVp9ZVDqrtc3T5X44bdTNg-J2yA</string>
-    <string name="google_storage_bucket" translatable="false">beacon-5db4f.firebasestorage.app</string>
-    <string name="project_id" translatable="false">beacon-5db4f</string>
+    <string name="gcm_defaultSenderId" translatable="false">316886808010</string>
+    <string name="google_api_key" translatable="false">AIzaSyAlh87LdB7EuW9e7sF4_AjaRvZ1aOJWVWU</string>
+    <string name="google_app_id" translatable="false">1:316886808010:android:f2545badeb13e6f1100b33</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyAlh87LdB7EuW9e7sF4_AjaRvZ1aOJWVWU</string>
+    <string name="google_storage_bucket" translatable="false">beacon-a8b3f.firebasestorage.app</string>
+    <string name="project_id" translatable="false">beacon-a8b3f</string>
     <string name="simulate_emergency">Simulate Emergency</string>
     <style name="Base.Theme.BEACON" parent="Theme.Material3.DayNight.NoActionBar">
         

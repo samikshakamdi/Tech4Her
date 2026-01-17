@@ -3819,7 +3819,7 @@ int id btnAddContact 0x7f080070
 int id btnEmergency 0x7f080071
 int id btnMic 0x7f080072
 int id btnSave 0x7f080073
-int id btnSimulateEmergency 0x7f080074
+int id btnSaveKeyword 0x7f080220
 int id buttonPanel 0x7f080075
 int id cache_measures 0x7f080076
 int id callMeasure 0x7f080077
@@ -3904,6 +3904,7 @@ int id enterAlways 0x7f0800c5
 int id enterAlwaysCollapsed 0x7f0800c6
 int id entireSpace 0x7f0800c7
 int id escape 0x7f0800c8
+int id etKeyword 0x7f08021e
 int id etName 0x7f0800c9
 int id etPhone 0x7f0800ca
 int id exitUntilCollapsed 0x7f0800cb
@@ -4218,6 +4219,7 @@ int id transition_scene_layoutid_cache 0x7f0801ff
 int id transition_transform 0x7f080200
 int id triangle 0x7f080201
 int id tvContacts 0x7f080202
+int id tvHeading 0x7f08021f
 int id unchecked 0x7f080203
 int id uniform 0x7f080204
 int id unlabeled 0x7f080205

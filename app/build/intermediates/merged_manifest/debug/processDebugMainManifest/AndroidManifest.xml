@@ -5,17 +5,29 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="31"
+        android:minSdkVersion="30"
         android:targetSdkVersion="36" />
 
-    <!-- 🔐 Permissions -->
+    <!-- 🌐 Network -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- 📍 Location -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- 📩 SMS -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+
+    <!-- 📞 Phone state (needed on some devices for SMS) -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <!-- 🔊 Foreground service (future / volume trigger safe) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
+    <!-- 📱 Device capability -->
     <uses-feature
         android:name="android.hardware.telephony"
         android:required="false" />
@@ -47,7 +59,7 @@
         android:testOnly="true"
         android:theme="@style/Theme.BEACON" >
 
-        <!-- Main Launcher Activity -->
+        <!-- 🚀 Main Launcher Activity -->
         <activity
             android:name="com.example.beacon.MainActivity"
             android:exported="true" >
@@ -58,14 +70,17 @@
             </intent-filter>
         </activity>
 
-        <!-- Future use: Add trusted contacts -->
-        <activity android:name="com.example.beacon.AddContactActivity" />
+        <!-- ➕ Add Trusted Contacts Screen -->
+        <activity
+            android:name="com.example.beacon.AddContactActivity"
+            android:exported="false" />
 
+        <!-- 🚨 Emergency Foreground Service (future-safe) -->
         <service
             android:name="com.example.beacon.EmergencyService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="specialUse|specialUse" />
+            android:foregroundServiceType="specialUse" />
         <service
             android:name="com.google.firebase.components.ComponentDiscoveryService"
             android:directBootAware="true"

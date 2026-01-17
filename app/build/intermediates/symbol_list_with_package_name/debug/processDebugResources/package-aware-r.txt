@@ -3820,7 +3820,7 @@ id btnAddContact
 id btnEmergency
 id btnMic
 id btnSave
-id btnSimulateEmergency
+id btnSaveKeyword
 id buttonPanel
 id cache_measures
 id callMeasure
@@ -3905,6 +3905,7 @@ id enterAlways
 id enterAlwaysCollapsed
 id entireSpace
 id escape
+id etKeyword
 id etName
 id etPhone
 id exitUntilCollapsed
@@ -4219,6 +4220,7 @@ id transition_scene_layoutid_cache
 id transition_transform
 id triangle
 id tvContacts
+id tvHeading
 id unchecked
 id uniform
 id unlabeled
