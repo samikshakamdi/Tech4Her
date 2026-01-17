@@ -29,17 +29,21 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    // UI
     TextView tvContacts;
     Button btnEmergency, btnMic, btnAddContact, btnSaveKeyword;
     EditText etKeyword;
 
+    // Storage & Services
     SharedPreferences prefs;
     FirebaseFirestore db;
     FusedLocationProviderClient fusedLocationClient;
 
+    // Constants
     private static final int PERMISSION_REQUEST = 101;
     private static final int VOICE_REQUEST = 200;
 
+    // Volume button logic
     int volumePressCount = 0;
     long lastPressTime = 0;
 
@@ -48,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Bind views
         tvContacts = findViewById(R.id.tvContacts);
         btnEmergency = findViewById(R.id.btnEmergency);
         btnMic = findViewById(R.id.btnMic);
@@ -55,31 +60,34 @@ public class MainActivity extends AppCompatActivity {
         btnSaveKeyword = findViewById(R.id.btnSaveKeyword);
         etKeyword = findViewById(R.id.etKeyword);
 
+        // Init
         prefs = getSharedPreferences("BeaconPrefs", MODE_PRIVATE);
-        etKeyword.setText(prefs.getString("keyword", "help"));
-
         db = FirebaseFirestore.getInstance();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Load saved keyword
+        etKeyword.setText(prefs.getString("keyword", "help"));
 
         requestPermissions();
         loadTrustedContacts();
 
+        // Click listeners
         btnEmergency.setOnClickListener(v -> triggerEmergency());
-
         btnMic.setOnClickListener(v -> startVoiceInput());
-
         btnSaveKeyword.setOnClickListener(v -> saveKeyword());
-
-        btnAddContact.setOnClickListener(v ->
-                startActivity(new Intent(this, AddContactActivity.class)));
+        btnAddContact.setOnClickListener(
+                v -> startActivity(new Intent(this, AddContactActivity.class))
+        );
     }
 
-    // 🔊 Volume Up ×3 Emergency
+    // 🔊 Volume Up pressed 3 times → Emergency
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             long now = System.currentTimeMillis();
-            if (now - lastPressTime > 2000) volumePressCount = 0;
+            if (now - lastPressTime > 2000) {
+                volumePressCount = 0;
+            }
             volumePressCount++;
             lastPressTime = now;
 
@@ -92,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    // 🎤 Voice Input
+    // 🎤 Start voice input
     private void startVoiceInput() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(
@@ -102,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, VOICE_REQUEST);
     }
 
+    // 🎧 Voice result
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -112,7 +121,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (result != null && !result.isEmpty()) {
                 String spokenText = result.get(0).toLowerCase();
-                String keyword = prefs.getString("keyword", "help").toLowerCase();
+                String keyword =
+                        prefs.getString("keyword", "help").toLowerCase();
 
                 if (spokenText.contains(keyword)) {
                     Toast.makeText(this, "Keyword detected!", Toast.LENGTH_SHORT).show();
@@ -124,93 +134,110 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 🚨 Emergency Logic
+    // 🚨 Emergency logic
     private void triggerEmergency() {
         if (ActivityCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Location permission missing", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(this,
+                    "Location permission missing",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
-        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-            String message = "🚨 EMERGENCY ALERT!\n";
-            Map<String, Object> alert = new HashMap<>();
-            alert.put("time", System.currentTimeMillis());
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
 
-            if (location != null) {
-                String link = "https://maps.google.com/?q=" +
-                        location.getLatitude() + "," +
-                        location.getLongitude();
-                message += "Location: " + link;
-                alert.put("location", link);
-            }
+                    String message = "🚨 EMERGENCY ALERT!\n";
+                    Map<String, Object> alert = new HashMap<>();
+                    alert.put("time", System.currentTimeMillis());
 
-            String finalMessage = message;
+                    if (location != null) {
+                        String link = "https://maps.google.com/?q="
+                                + location.getLatitude()
+                                + "," + location.getLongitude();
+                        message += "Location: " + link;
+                        alert.put("location", link);
+                    }
 
-            db.collection("emergency_events")
-                    .add(alert)
-                    .addOnSuccessListener(doc -> {
-                        Toast.makeText(this,
-                                "Emergency triggered",
-                                Toast.LENGTH_SHORT).show();
-                        sendSmsToTrustedContacts(finalMessage);
-                    });
-        });
+                    String finalMessage = message;
+
+                    db.collection("emergency_events")
+                            .add(alert)
+                            .addOnSuccessListener(doc -> {
+                                Toast.makeText(
+                                        this,
+                                        "Emergency triggered",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                                sendSmsToTrustedContacts(finalMessage);
+                            });
+                });
     }
 
-    // 📩 Auto SMS
+    // 📩 Send SMS automatically
     private void sendSmsToTrustedContacts(String message) {
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
+
             Toast.makeText(this,
                     "SMS permission not granted",
                     Toast.LENGTH_SHORT).show();
             return;
         }
 
-        db.collection("trusted_contacts").get().addOnSuccessListener(query -> {
-            SmsManager smsManager = SmsManager.getDefault();
-            for (DocumentSnapshot doc : query) {
-                String phone = doc.getString("phone");
-                if (phone != null && phone.length() >= 10) {
-                    ArrayList<String> parts =
-                            smsManager.divideMessage(message);
-                    smsManager.sendMultipartTextMessage(
-                            phone, null, parts, null, null);
-                }
-            }
-            Toast.makeText(this,
-                    "SMS sent automatically",
-                    Toast.LENGTH_SHORT).show();
-        });
+        db.collection("trusted_contacts")
+                .get()
+                .addOnSuccessListener(query -> {
+                    SmsManager smsManager = SmsManager.getDefault();
+
+                    for (DocumentSnapshot doc : query) {
+                        String phone = doc.getString("phone");
+                        if (phone != null && phone.length() >= 10) {
+                            ArrayList<String> parts =
+                                    smsManager.divideMessage(message);
+                            smsManager.sendMultipartTextMessage(
+                                    phone, null, parts, null, null
+                            );
+                        }
+                    }
+
+                    Toast.makeText(this,
+                            "SMS sent automatically",
+                            Toast.LENGTH_SHORT).show();
+                });
     }
 
-    // 📇 Load Contacts
+    // 📇 Load trusted contacts
     private void loadTrustedContacts() {
-        db.collection("trusted_contacts").get().addOnSuccessListener(query -> {
-            StringBuilder sb = new StringBuilder();
-            for (DocumentSnapshot doc : query) {
-                sb.append("👤 ")
-                        .append(doc.getString("name"))
-                        .append(" : ")
-                        .append(doc.getString("phone"))
-                        .append("\n\n");
-            }
-            tvContacts.setText(sb.toString());
-        });
+        db.collection("trusted_contacts")
+                .get()
+                .addOnSuccessListener(query -> {
+                    StringBuilder sb = new StringBuilder();
+                    for (DocumentSnapshot doc : query) {
+                        sb.append("👤 ")
+                                .append(doc.getString("name"))
+                                .append(" : ")
+                                .append(doc.getString("phone"))
+                                .append("\n\n");
+                    }
+                    tvContacts.setText(sb.toString());
+                });
     }
 
-    // 💾 Save Keyword
+    // 💾 Save keyword locally
     private void saveKeyword() {
         String keyword = etKeyword.getText().toString().trim();
+
         if (keyword.isEmpty()) {
             Toast.makeText(this,
                     "Keyword cannot be empty",
                     Toast.LENGTH_SHORT).show();
             return;
         }
+
         prefs.edit().putString("keyword", keyword).apply();
         Toast.makeText(this,
                 "Keyword saved successfully",
@@ -235,6 +262,8 @@ public class MainActivity extends AppCompatActivity {
             int requestCode,
             @NonNull String[] permissions,
             @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        super.onRequestPermissionsResult(
+                requestCode, permissions, grantResults);
     }
 }
