@@ -4,247 +4,268 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.speech.RecognizerIntent;
 import android.telephony.SmsManager;
 import android.view.KeyEvent;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.*;
 
-import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    // UI
-    TextView tvContacts;
+    ListView listContacts;
     Button btnEmergency, btnMic, btnAddContact, btnSaveKeyword;
     EditText etKeyword;
 
-    // Storage & Services
     SharedPreferences prefs;
     FirebaseFirestore db;
     FusedLocationProviderClient fusedLocationClient;
 
-    // Constants
-    private static final int PERMISSION_REQUEST = 101;
-    private static final int VOICE_REQUEST = 200;
+    static final int PERMISSION_REQUEST = 101;
+    static final int VOICE_REQUEST = 200;
 
-    // Volume button logic
     int volumePressCount = 0;
     long lastPressTime = 0;
+
+    CountDownTimer emergencyTimer;
+    boolean isCountdownRunning = false;
+    boolean isEmergencyCancelled = false;
+
+    ArrayList<String> contactNames = new ArrayList<>();
+    ArrayList<String> contactIds = new ArrayList<>();
+
+    ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Bind views
-        tvContacts = findViewById(R.id.tvContacts);
+        // 🔗 Bind views
+        listContacts = findViewById(R.id.listContacts);
         btnEmergency = findViewById(R.id.btnEmergency);
         btnMic = findViewById(R.id.btnMic);
         btnAddContact = findViewById(R.id.btnAddContact);
         btnSaveKeyword = findViewById(R.id.btnSaveKeyword);
         etKeyword = findViewById(R.id.etKeyword);
 
-        // Init
         prefs = getSharedPreferences("BeaconPrefs", MODE_PRIVATE);
         db = FirebaseFirestore.getInstance();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Load saved keyword
         etKeyword.setText(prefs.getString("keyword", "help"));
+
+        // ✅ Custom adapter with BLACK text
+        adapter = new ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_1,
+                contactNames
+        ) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView tv = view.findViewById(android.R.id.text1);
+                tv.setTextColor(Color.BLACK);
+                tv.setTextSize(16);
+                return view;
+            }
+        };
+
+        listContacts.setAdapter(adapter);
 
         requestPermissions();
         loadTrustedContacts();
 
-        // Click listeners
-        btnEmergency.setOnClickListener(v -> triggerEmergency());
+        btnEmergency.setOnClickListener(v -> startEmergencyFlow());
         btnMic.setOnClickListener(v -> startVoiceInput());
         btnSaveKeyword.setOnClickListener(v -> saveKeyword());
         btnAddContact.setOnClickListener(
                 v -> startActivity(new Intent(this, AddContactActivity.class))
         );
+
+        // 🗑️ Delete single contact (LONG PRESS)
+        listContacts.setOnItemLongClickListener((p, v, pos, id) -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Contact")
+                    .setMessage("Delete " + contactNames.get(pos) + "?")
+                    .setPositiveButton("DELETE", (d, w) ->
+                            db.collection("trusted_contacts")
+                                    .document(contactIds.get(pos))
+                                    .delete()
+                                    .addOnSuccessListener(x -> loadTrustedContacts())
+                    )
+                    .setNegativeButton("CANCEL", null)
+                    .show();
+            return true;
+        });
     }
 
-    // 🔊 Volume Up pressed 3 times → Emergency
+    // 🔊 Volume Up ×3 trigger
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             long now = System.currentTimeMillis();
-            if (now - lastPressTime > 2000) {
-                volumePressCount = 0;
-            }
+            if (now - lastPressTime > 2000) volumePressCount = 0;
             volumePressCount++;
             lastPressTime = now;
 
             if (volumePressCount == 3) {
-                triggerEmergency();
                 volumePressCount = 0;
+                startEmergencyFlow();
             }
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
-    // 🎤 Start voice input
+    // 🎤 Voice input
     private void startVoiceInput() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-        );
-        startActivityForResult(intent, VOICE_REQUEST);
+        Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        startActivityForResult(i, VOICE_REQUEST);
     }
 
-    // 🎧 Voice result
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == VOICE_REQUEST && resultCode == RESULT_OK && data != null) {
-            ArrayList<String> result =
+    protected void onActivityResult(int code, int result, Intent data) {
+        super.onActivityResult(code, result, data);
+        if (code == VOICE_REQUEST && result == RESULT_OK && data != null) {
+            ArrayList<String> res =
                     data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-
-            if (result != null && !result.isEmpty()) {
-                String spokenText = result.get(0).toLowerCase();
-                String keyword =
-                        prefs.getString("keyword", "help").toLowerCase();
-
-                if (spokenText.contains(keyword)) {
-                    Toast.makeText(this, "Keyword detected!", Toast.LENGTH_SHORT).show();
-                    triggerEmergency();
-                } else {
-                    Toast.makeText(this, "Keyword not matched", Toast.LENGTH_SHORT).show();
+            if (res != null && !res.isEmpty()) {
+                if (res.get(0).toLowerCase()
+                        .contains(prefs.getString("keyword", "help").toLowerCase())) {
+                    startEmergencyFlow();
                 }
             }
         }
     }
 
-    // 🚨 Emergency logic
-    private void triggerEmergency() {
-        if (ActivityCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+    // 🚨 Emergency countdown
+    private void startEmergencyFlow() {
+        if (isCountdownRunning) return;
 
-            Toast.makeText(this,
-                    "Location permission missing",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
+        isCountdownRunning = true;
+        isEmergencyCancelled = false;
 
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(location -> {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Emergency Alert")
+                .setMessage("Sending alert in 5 seconds...")
+                .setCancelable(false)
+                .setNegativeButton("CANCEL", (d, w) -> {
+                    isEmergencyCancelled = true;
+                    isCountdownRunning = false;
+                    if (emergencyTimer != null) emergencyTimer.cancel();
+                })
+                .create();
 
-                    String message = "🚨 EMERGENCY ALERT!\n";
-                    Map<String, Object> alert = new HashMap<>();
-                    alert.put("time", System.currentTimeMillis());
+        dialog.show();
 
-                    if (location != null) {
-                        String link = "https://maps.google.com/?q="
-                                + location.getLatitude()
-                                + "," + location.getLongitude();
-                        message += "Location: " + link;
-                        alert.put("location", link);
-                    }
+        emergencyTimer = new CountDownTimer(5000, 1000) {
+            public void onTick(long ms) {
+                dialog.setMessage("Sending alert in " + (ms / 1000) + " seconds...");
+            }
 
-                    String finalMessage = message;
-
-                    db.collection("emergency_events")
-                            .add(alert)
-                            .addOnSuccessListener(doc -> {
-                                Toast.makeText(
-                                        this,
-                                        "Emergency triggered",
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                                sendSmsToTrustedContacts(finalMessage);
-                            });
-                });
+            public void onFinish() {
+                dialog.dismiss();
+                isCountdownRunning = false;
+                if (!isEmergencyCancelled) triggerEmergency();
+            }
+        }.start();
     }
 
-    // 📩 Send SMS automatically
-    private void sendSmsToTrustedContacts(String message) {
+    // 🚨 Send SMS
+    private void triggerEmergency() {
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.SEND_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED) return;
 
-            Toast.makeText(this,
-                    "SMS permission not granted",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        db.collection("trusted_contacts")
-                .get()
-                .addOnSuccessListener(query -> {
-                    SmsManager smsManager = SmsManager.getDefault();
-
-                    for (DocumentSnapshot doc : query) {
-                        String phone = doc.getString("phone");
-                        if (phone != null && phone.length() >= 10) {
-                            ArrayList<String> parts =
-                                    smsManager.divideMessage(message);
-                            smsManager.sendMultipartTextMessage(
-                                    phone, null, parts, null, null
-                            );
-                        }
-                    }
-
-                    Toast.makeText(this,
-                            "SMS sent automatically",
-                            Toast.LENGTH_SHORT).show();
-                });
+        fusedLocationClient.getLastLocation().addOnSuccessListener(loc -> {
+            String msg = "🚨 EMERGENCY ALERT!\n";
+            if (loc != null) {
+                msg += "Location: https://maps.google.com/?q="
+                        + loc.getLatitude() + "," + loc.getLongitude();
+            }
+            sendSmsToTrustedContacts(msg);
+        });
     }
 
-    // 📇 Load trusted contacts
+    private void sendSmsToTrustedContacts(String msg) {
+        db.collection("trusted_contacts").get().addOnSuccessListener(q -> {
+            SmsManager sms = SmsManager.getDefault();
+            for (DocumentSnapshot d : q) {
+                String phone = d.getString("phone");
+                if (phone != null && phone.length() >= 10) {
+                    sms.sendMultipartTextMessage(
+                            phone, null,
+                            sms.divideMessage(msg),
+                            null, null
+                    );
+                }
+            }
+        });
+    }
+
+    // 📇 Load contacts + FIX space issue
     private void loadTrustedContacts() {
-        db.collection("trusted_contacts")
-                .get()
-                .addOnSuccessListener(query -> {
-                    StringBuilder sb = new StringBuilder();
-                    for (DocumentSnapshot doc : query) {
-                        sb.append("👤 ")
-                                .append(doc.getString("name"))
-                                .append(" : ")
-                                .append(doc.getString("phone"))
-                                .append("\n\n");
-                    }
-                    tvContacts.setText(sb.toString());
-                });
+        db.collection("trusted_contacts").get().addOnSuccessListener(q -> {
+            contactNames.clear();
+            contactIds.clear();
+
+            for (DocumentSnapshot d : q) {
+                contactIds.add(d.getId());
+                contactNames.add("👤 " + d.getString("name")
+                        + " : " + d.getString("phone"));
+            }
+
+            adapter.notifyDataSetChanged();
+            adjustListViewHeight();
+        });
     }
 
-    // 💾 Save keyword locally
-    private void saveKeyword() {
-        String keyword = etKeyword.getText().toString().trim();
+    // ✅ Fix ListView extra space
+    private void adjustListViewHeight() {
+        ViewGroup.LayoutParams params = listContacts.getLayoutParams();
 
-        if (keyword.isEmpty()) {
-            Toast.makeText(this,
-                    "Keyword cannot be empty",
-                    Toast.LENGTH_SHORT).show();
-            return;
+        if (adapter.getCount() == 0) {
+            params.height = 0;
+        } else {
+            int totalHeight = 0;
+            for (int i = 0; i < adapter.getCount(); i++) {
+                View item = adapter.getView(i, null, listContacts);
+                item.measure(0, 0);
+                totalHeight += item.getMeasuredHeight();
+            }
+            params.height = totalHeight +
+                    (listContacts.getDividerHeight()
+                            * (adapter.getCount() - 1));
         }
 
-        prefs.edit().putString("keyword", keyword).apply();
-        Toast.makeText(this,
-                "Keyword saved successfully",
-                Toast.LENGTH_SHORT).show();
+        listContacts.setLayoutParams(params);
+        listContacts.requestLayout();
     }
 
-    // 🔐 Permissions
+    private void saveKeyword() {
+        prefs.edit()
+                .putString("keyword",
+                        etKeyword.getText().toString().trim())
+                .apply();
+    }
+
     private void requestPermissions() {
         ActivityCompat.requestPermissions(
                 this,
@@ -255,15 +276,5 @@ public class MainActivity extends AppCompatActivity {
                 },
                 PERMISSION_REQUEST
         );
-    }
-
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode,
-            @NonNull String[] permissions,
-            @NonNull int[] grantResults) {
-
-        super.onRequestPermissionsResult(
-                requestCode, permissions, grantResults);
     }
 }
