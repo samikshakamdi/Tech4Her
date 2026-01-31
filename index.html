@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Assist++ | Digital Companion</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">🛡️ Assist++</div>
+            <p class="tagline">Digital Safety Companion</p>
+        </header>
+
+        <!-- Wizard Container -->
+        <div class="wizard-container" id="wizard">
+
+            <!-- Step 1: Input -->
+            <div class="wizard-step active" id="step-input">
+                <div class="step-header">
+                    <h2>Analyze Suspicious Message</h2>
+                    <p>Paste the text below to detect scams & threats.</p>
+                </div>
+                <div class="input-area">
+                    <textarea id="messageInput" placeholder="Paste the suspicious message here..."></textarea>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="startAnalysis()">Analyze Risk</button>
+                    <!-- Small toggle to switch to link scan if needed, or just keep link scan below -->
+                </div>
+            </div>
+
+            <!-- Step 2: Private Image Check (Conditional) -->
+            <div class="wizard-step" id="step-threat-check">
+                <div class="step-header">
+                    <div class="icon-warning">⚠️</div>
+                    <h2>Potential Sensitive Threat</h2>
+                    <p>Does this message threaten to share your private photos or videos?</p>
+                </div>
+                <div class="actions row">
+                    <button class="btn btn-danger" onclick="confirmThreat(true)">YES, it does</button>
+                    <button class="btn btn-secondary" onclick="confirmThreat(false)">NO, it doesn't</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Risk Overview -->
+            <div class="wizard-step" id="step-result-overview">
+                <div class="step-header">
+                    <h2 id="risk-level-display">Risk Analysis</h2>
+                    <p id="risk-summary">One moment...</p>
+                </div>
+                <div class="risk-details-card">
+                    <div class="risk-metric">
+                        <span class="label">Risk Level</span>
+                        <span class="value" id="risk-level-value">High</span>
+                    </div>
+                    <div class="risk-metric">
+                        <span class="label">Primary Type</span>
+                        <span class="value" id="risk-type-value">Financial Scam</span>
+                    </div>
+                </div>
+                <div class="flagged-reasons" id="risk-reasons">
+                    <!-- Dynamic content -->
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="nextStep('step-guidance')">Next: What should I do?</button>
+                    <button class="btn btn-text" onclick="resetWizard()">Start Over</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Guidance -->
+            <div class="wizard-step" id="step-guidance">
+                <div class="step-header">
+                    <h2>Recommended Actions</h2>
+                    <p>Follow these steps to stay safe.</p>
+                </div>
+                <ul class="guidance-list" id="guidance-list">
+                    <!-- Dynamic list -->
+                </ul>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="nextStep('step-report')">Next: Report Template</button>
+                    <button class="btn btn-secondary" onclick="prevStep('step-result-overview')">Back</button>
+                </div>
+            </div>
+
+            <!-- Step 5: Report -->
+            <div class="wizard-step" id="step-report">
+                <div class="step-header">
+                    <h2>Report Template</h2>
+                    <p>Use this generated text to report to authorities or platforms.</p>
+                </div>
+                <div class="report-box">
+                    <textarea id="report-text" readonly></textarea>
+                    <button class="btn-icon" onclick="copyReport()" title="Copy to Clipboard">📋</button>
+                </div>
+                <div class="actions column">
+                    <button class="btn btn-primary" onclick="downloadSummary()">Download Summary POF</button>
+                    <button class="btn btn-text" onclick="resetWizard()">Analyze Another Message</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Link Scan (Mini Version) -->
+        <div class="mini-tool" id="link-scan-section">
+            <h3>Or scan a profile link</h3>
+            <div class="input-row">
+                <input type="text" id="linkInput" placeholder="https://example.com/profile" />
+                <button class="btn btn-small" onclick="scanLink()">Check</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

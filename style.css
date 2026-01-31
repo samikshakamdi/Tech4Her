@@ -1,0 +1,391 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+:root {
+    --primary: #FF2FA0;
+    --primary-dark: #D41480;
+    --secondary: #6C63FF;
+    --bg-gradient: linear-gradient(135deg, #fdfbfd 0%, #f4e7f0 100%);
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+    --shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    --text-main: #2D3436;
+    --text-muted: #636e72;
+    --danger: #FF4757;
+    --success: #2ED573;
+    --warning: #FFA502;
+    --font-main: 'Outfit', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-main);
+    background: var(--bg-gradient);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* --- Layout --- */
+
+.main-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.app-header {
+    text-align: center;
+    margin-bottom: 20px;
+    animation: fadeIn 0.8s ease;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -0.5px;
+}
+
+.tagline {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* --- Wizard Container (Glassmorphism) --- */
+
+.wizard-container {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: var(--glass-border);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: var(--shadow);
+    min-height: 400px;
+    position: relative;
+    overflow: hidden;
+}
+
+.wizard-step {
+    display: none;
+    /* Toggled by JS */
+    flex-direction: column;
+    height: 100%;
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wizard-step.active {
+    display: flex;
+}
+
+.step-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.step-header h2 {
+    font-size: 22px;
+    margin-bottom: 8px;
+    color: var(--text-main);
+}
+
+.step-header p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* --- Inputs --- */
+
+textarea {
+    width: 100%;
+    height: 150px;
+    padding: 16px;
+    background: #fff;
+    border: 2px solid #EEE;
+    border-radius: 16px;
+    font-size: 16px;
+    font-family: inherit;
+    resize: none;
+    transition: 0.3s;
+    outline: none;
+}
+
+textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(255, 47, 160, 0.1);
+}
+
+/* --- Risk Cards --- */
+
+.risk-details-card {
+    display: flex;
+    justify-content: space-between;
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #f0f0f0;
+}
+
+.risk-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 48%;
+}
+
+.risk-metric .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.risk-metric .value {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.risk-level-high .value,
+.value.risk-high {
+    color: var(--danger);
+}
+
+.value.risk-medium {
+    color: var(--warning);
+}
+
+.value.risk-low {
+    color: var(--success);
+}
+
+.flagged-reasons {
+    background: #fff5f8;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    color: var(--primary-dark);
+    font-size: 14px;
+}
+
+.flagged-reasons p {
+    margin-bottom: 6px;
+}
+
+.flagged-reasons p:last-child {
+    margin-bottom: 0;
+}
+
+/* --- Guidance List --- */
+.guidance-list {
+    list-style: none;
+    margin-bottom: 20px;
+}
+
+.guidance-list li {
+    background: #fff;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.guidance-list li strong {
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+/* --- Report Box --- */
+.report-box {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.report-box textarea {
+    background: #f8f9fa;
+    color: #444;
+    font-size: 13px;
+    height: 200px;
+    cursor: default;
+}
+
+.report-box .btn-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.2s;
+}
+
+.report-box .btn-icon:hover {
+    background: #f0f0f0;
+    transform: scale(1.1);
+}
+
+/* --- Buttons --- */
+
+.actions {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.actions.row {
+    flex-direction: row;
+}
+
+.actions.row .btn {
+    width: 50%;
+}
+
+.btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 14px rgba(255, 47, 160, 0.3);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-secondary {
+    background: #fff;
+    color: var(--text-main);
+    border: 1px solid #ddd;
+}
+
+.btn-secondary:hover {
+    background: #f7f7f7;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    box-shadow: 0 4px 14px rgba(255, 71, 87, 0.3);
+}
+
+.btn-text {
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 400;
+    padding: 10px;
+}
+
+.btn-text:hover {
+    color: var(--text-main);
+}
+
+/* --- Mini Tool --- */
+.mini-tool {
+    text-align: center;
+    padding: 20px;
+    opacity: 0.8;
+}
+
+.mini-tool h3 {
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 12px;
+    color: var(--text-muted);
+}
+
+.input-row {
+    display: flex;
+    gap: 10px;
+}
+
+.input-row input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+.btn-small {
+    padding: 0 20px;
+    background: var(--secondary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* --- Icon Warning --- */
+.icon-warning {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+/* --- Animations --- */
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+    .wizard-container {
+        padding: 20px;
+    }
+
+    .step-header h2 {
+        font-size: 20px;
+    }
+}
