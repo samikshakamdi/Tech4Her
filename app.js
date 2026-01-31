@@ -1,11 +1,10 @@
+// Initial State
+let currentLanguage = localStorage.getItem('appLanguage') || 'en';
+document.getElementById('language-selector').value = currentLanguage;
+
 /************************************
  * CONFIGURATION & DATASETS
  ************************************/
-
-const THREAT_WORDS = ["kill", "leak", "expose", "destroy", "ruin", "blackmail", "threat", "police", "arrest"];
-const PHOTO_WORDS = ["photo", "image", "video", "private", "nude", "pics", "gallery", "cam"];
-const MONEY_WORDS = ["pay", "money", "transfer", "upi", "urgent", "crypto", "bank", "account", "wallet", "fee", "tax"];
-const SCAM_WORDS = ["free", "click", "offer", "verify", "winner", "limited", "login", "password", "prize", "lottery"];
 
 const WEIGHTS = { threat: 4, photo: 5, money: 3, scam: 2 };
 
@@ -18,6 +17,42 @@ let currentAnalysis = {
     message: "",
     userConfirmedThreat: false
 };
+
+/************************************
+ * INTERNATIONALIZATION (I18N)
+ ************************************/
+
+function changeLanguage(lang) {
+    currentLanguage = lang;
+    localStorage.setItem('appLanguage', lang);
+    applyTranslations();
+
+    // If we have any analysis data, re-render the dynamic results immediately.
+    // This ensures that if the user is on the Guidance or Report step, those update too.
+    if (currentAnalysis.message) {
+        renderResults();
+    }
+}
+
+function applyTranslations() {
+    const t = TRANSLATIONS[currentLanguage];
+    if (!t) return;
+
+    // 1. Static Text
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.innerText = t[key];
+    });
+
+    // 2. Placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (t[key]) el.placeholder = t[key];
+    });
+}
+
+// Apply on load
+applyTranslations();
 
 /************************************
  * WIZARD NAVIGATION
@@ -59,7 +94,7 @@ function resetWizard() {
 function startAnalysis() {
     const message = document.getElementById("messageInput").value.trim();
     if (!message) {
-        alert("Please paste a message first.");
+        alert(TRANSLATIONS[currentLanguage].alerts.emptyMessage);
         return;
     }
 
@@ -70,11 +105,14 @@ function startAnalysis() {
     currentAnalysis.flags = { threat: false, photo: false, money: false, scam: false };
     currentAnalysis.score = 0;
 
-    // Calculate score
-    THREAT_WORDS.forEach(w => { if (text.includes(w)) { currentAnalysis.score += WEIGHTS.threat; currentAnalysis.flags.threat = true; } });
-    PHOTO_WORDS.forEach(w => { if (text.includes(w)) { currentAnalysis.score += WEIGHTS.photo; currentAnalysis.flags.photo = true; } });
-    MONEY_WORDS.forEach(w => { if (text.includes(w)) { currentAnalysis.score += WEIGHTS.money; currentAnalysis.flags.money = true; } });
-    SCAM_WORDS.forEach(w => { if (text.includes(w)) { currentAnalysis.score += WEIGHTS.scam; currentAnalysis.flags.scam = true; } });
+    // Calculate score using MULTILINGUAL keywords
+    // We check ALL languages to ensure safety even if UI language doesn't match message language
+    const keywords = MULTILINGUAL_KEYWORDS;
+
+    keywords.threat.forEach(w => { if (text.includes(w)) { currentAnalysis.score += WEIGHTS.threat; currentAnalysis.flags.threat = true; } });
+    keywords.photo.forEach(w => { if (text.includes(w)) { currentAnalysis.score += WEIGHTS.photo; currentAnalysis.flags.photo = true; } });
+    keywords.money.forEach(w => { if (text.includes(w)) { currentAnalysis.score += WEIGHTS.money; currentAnalysis.flags.money = true; } });
+    keywords.scam.forEach(w => { if (text.includes(w)) { currentAnalysis.score += WEIGHTS.scam; currentAnalysis.flags.scam = true; } });
 
     // Decide Route
     // If "photo" or "threat" words are found, we ask the sensitive question
@@ -99,20 +137,20 @@ function confirmThreat(isConfirmed) {
 }
 
 function finalizeAnalysis() {
-    // Determine Risk Level
+    // Determine Risk Level (Logic remains same, labels change in render)
     if (currentAnalysis.score >= 8) currentAnalysis.riskLevel = "HIGH";
     else if (currentAnalysis.score >= 4) currentAnalysis.riskLevel = "MEDIUM";
     else currentAnalysis.riskLevel = "LOW";
 
-    // Determine Risk Type
+    // Determine Risk Type (Logic remains same)
     if (currentAnalysis.userConfirmedThreat || (currentAnalysis.flags.photo && currentAnalysis.score > 5)) {
-        currentAnalysis.riskType = "Sextortion / Harassment";
+        currentAnalysis.riskType = "sextortion"; // Use keys for translation
     } else if (currentAnalysis.flags.money) {
-        currentAnalysis.riskType = "Financial Scam";
+        currentAnalysis.riskType = "scam";
     } else if (currentAnalysis.flags.threat) {
-        currentAnalysis.riskType = "Intimidation";
+        currentAnalysis.riskType = "intimidation";
     } else {
-        currentAnalysis.riskType = "Spam / Phishing";
+        currentAnalysis.riskType = "spam";
     }
 
     renderResults();
@@ -123,23 +161,42 @@ function finalizeAnalysis() {
  * RENDERING RESULTS
  ************************************/
 
-function renderResults() {
-    // 1. Overview Screen
-    document.getElementById('risk-level-value').innerText = currentAnalysis.riskLevel;
-    document.getElementById('risk-level-value').className = "value risk-" + currentAnalysis.riskLevel.toLowerCase();
+/************************************
+ * RENDERING RESULTS
+ ************************************/
 
-    document.getElementById('risk-type-value').innerText = currentAnalysis.riskType;
+function renderResults() {
+    const t = TRANSLATIONS[currentLanguage];
+
+    // 1. Overview Screen
+    let riskDisplay = currentAnalysis.riskLevel;
+    let riskClass = "risk-" + currentAnalysis.riskLevel.toLowerCase();
+
+    let localizedRisk = t.riskLow;
+    if (currentAnalysis.riskLevel === "HIGH") localizedRisk = t.riskHigh;
+    if (currentAnalysis.riskLevel === "MEDIUM") localizedRisk = t.riskMedium;
+
+    const riskValEl = document.getElementById('risk-level-value');
+    riskValEl.innerText = localizedRisk;
+    riskValEl.className = "value " + riskClass;
+
+    let typeKey = "typeSpam";
+    if (currentAnalysis.riskType === "sextortion") typeKey = "typeSextortion";
+    if (currentAnalysis.riskType === "scam") typeKey = "typeScam";
+    if (currentAnalysis.riskType === "intimidation") typeKey = "typeIntimidation";
+
+    document.getElementById('risk-type-value').innerText = t[typeKey];
 
     const reasonsDiv = document.getElementById('risk-reasons');
     reasonsDiv.innerHTML = '';
 
     let reasons = [];
-    if (currentAnalysis.flags.money) reasons.push("Requests for money or transfer");
-    if (currentAnalysis.flags.photo) reasons.push("Mentions private images/videos");
-    if (currentAnalysis.flags.threat) reasons.push("Threatening language detected");
-    if (currentAnalysis.flags.scam) reasons.push("Common scam keywords used");
+    if (currentAnalysis.flags.money) reasons.push(t.reasons.money);
+    if (currentAnalysis.flags.photo) reasons.push(t.reasons.photo);
+    if (currentAnalysis.flags.threat) reasons.push(t.reasons.threat);
+    if (currentAnalysis.flags.scam) reasons.push(t.reasons.scam);
 
-    if (reasons.length === 0) reasons.push("No specific keywords found, but stay alert.");
+    if (reasons.length === 0) reasons.push(t.reasons.none);
 
     reasons.forEach(r => {
         const p = document.createElement('p');
@@ -147,9 +204,11 @@ function renderResults() {
         reasonsDiv.appendChild(p);
     });
 
-    document.getElementById('risk-summary').innerText =
-        currentAnalysis.riskLevel === "HIGH" ? "Immediate Action Recommended" :
-            currentAnalysis.riskLevel === "MEDIUM" ? "Proceed with Caution" : "Appears Safe";
+    let summaryText = t.summaryLow;
+    if (currentAnalysis.riskLevel === "HIGH") summaryText = t.summaryHigh;
+    if (currentAnalysis.riskLevel === "MEDIUM") summaryText = t.summaryMedium;
+
+    document.getElementById('risk-summary').innerText = summaryText;
 
     // 2. Guidance Screen
     const guidanceList = document.getElementById('guidance-list');
@@ -168,45 +227,65 @@ function renderResults() {
 }
 
 function getGuidanceSteps() {
-    if (currentAnalysis.riskType === "Sextortion / Harassment") {
-        return [
-            { title: "Do NOT Pay", desc: "Paying never makes it stop. They will ask for more." },
-            { title: "Block & Report", desc: "Block the sender immediately on all platforms." },
-            { title: "Save Evidence", desc: "Take screenshots of everything before blocking." },
-            { title: "Deactivate Temporarily", desc: "Consider deactivating your social accounts for a few days." }
-        ];
-    } else if (currentAnalysis.riskType === "Financial Scam") {
-        return [
-            { title: "Stop Communication", desc: "Do not reply or negotiate." },
-            { title: "Protect Funds", desc: "Do not transfer any money or approve UPI requests." },
-            { title: "Verify Source", desc: "Contact the official company/person through a trusted channel." }
-        ];
+    const t = TRANSLATIONS[currentLanguage];
+
+    if (currentAnalysis.riskType === "sextortion") {
+        return t.guidance.sextortion;
+    } else if (currentAnalysis.riskType === "scam") {
+        return t.guidance.scam;
     } else {
-        return [
-            { title: "Ignore", desc: "Do not click links or reply." },
-            { title: "Delete", desc: "Remove the message from your device." },
-            { title: "Stay Alert", desc: "Watch out for similar follow-up messages." }
-        ];
+        return t.guidance.general;
     }
 }
 
 function generateReportText() {
+    const t = TRANSLATIONS[currentLanguage];
+    const tr = t.report; // Translation Report Object
     const date = new Date().toLocaleDateString();
-    return `[CYBERCRIME REPORT DRAFT]
-Date: ${date}
-Incident Type: ${currentAnalysis.riskType}
-Risk Level: ${currentAnalysis.riskLevel}
 
-Description:
-I received a suspicious message that was flagged as ${currentAnalysis.riskLevel} risk (${currentAnalysis.riskType}).
-The message contained threats or requests associated with: ${Object.keys(currentAnalysis.flags).filter(k => currentAnalysis.flags[k]).join(', ')}.
+    // Get localized values
+    let riskLoc = currentAnalysis.riskLevel; // Fallback
+    if (currentAnalysis.riskLevel === "HIGH") riskLoc = t.riskHigh;
+    else if (currentAnalysis.riskLevel === "MEDIUM") riskLoc = t.riskMedium;
+    else riskLoc = t.riskLow;
 
-Evidence Content:
-"${currentAnalysis.message}"
+    let typeLoc = t["type" + currentAnalysis.riskType.charAt(0).toUpperCase() + currentAnalysis.riskType.slice(1)];
+    if (!typeLoc) typeLoc = currentAnalysis.riskType;
 
-Request:
-Please investigate this sender and take appropriate action.
-`;
+    // Build "Reasons" list with bullet points
+    let reasonsList = "";
+    const reasonsMap = t.reasons;
+
+    if (currentAnalysis.flags.money) reasonsList += `\n- ${reasonsMap.money}`;
+    if (currentAnalysis.flags.photo) reasonsList += `\n- ${reasonsMap.photo}`;
+    if (currentAnalysis.flags.threat) reasonsList += `\n- ${reasonsMap.threat}`;
+    if (currentAnalysis.flags.scam) reasonsList += `\n- ${reasonsMap.scam}`;
+
+    // Fallback if no specific flags
+    if (!reasonsList) reasonsList = `\n- ${reasonsMap.none}`;
+
+    // Construct the Report
+    let text = "";
+    text += `${tr.dateLabel}: ${date}\n`;
+    text += `${tr.typeLabel}: ${typeLoc}\n`;
+    text += `${tr.riskLabel}: ${riskLoc}\n\n`;
+
+    text += `${tr.descHeader}\n`;
+    text += `${tr.descBody}\n\n`;
+
+    text += `${tr.evidenceHeader}\n`;
+    text += `"${currentAnalysis.message}"\n\n`;
+
+    text += `${tr.reasonHeader}`;
+    text += `${reasonsList}\n\n`;
+
+    text += `${tr.actionHeader}\n`;
+    text += `${tr.actionBody}\n\n`;
+
+    text += `${tr.submittedHeader}\n`;
+    text += `${tr.submittedBody}`;
+
+    return text;
 }
 
 /************************************
@@ -216,19 +295,19 @@ Please investigate this sender and take appropriate action.
 function copyReport() {
     const copyText = document.getElementById("report-text");
     copyText.select();
-    document.execCommand("copy"); // Fallback for older browsers
-    // Modern way: navigator.clipboard.writeText(copyText.value);
-    alert("Report copied to clipboard!");
+    document.execCommand("copy"); // Fallback
+    // navigator.clipboard.writeText(copyText.value);
+    alert(TRANSLATIONS[currentLanguage].alerts.copied);
 }
 
 function downloadSummary() {
     const text = document.getElementById("report-text").value;
     const blob = new Blob([text], { type: "text/plain" });
     const anchor = document.createElement("a");
-    anchor.download = "Safe_Report_Summary.txt";
+    anchor.download = "Safe_Report_Summary_" + currentLanguage + ".txt";
     anchor.href = window.URL.createObjectURL(blob);
     anchor.target = "_blank";
-    anchor.style.display = "none"; // just to be safe
+    anchor.style.display = "none";
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
@@ -236,9 +315,6 @@ function downloadSummary() {
 
 function scanLink() {
     const link = document.getElementById('linkInput').value;
-    if (!link) return alert("Please enter a link");
-    alert("Safety scan functionality for links is coming soon! For now, please verify URLs manually.");
+    if (!link) return alert(TRANSLATIONS[currentLanguage].alerts.enterLink);
+    alert(TRANSLATIONS[currentLanguage].alerts.linkComingSoon);
 }
-
-// Initialize
-resetWizard();

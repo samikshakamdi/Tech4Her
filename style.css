@@ -44,14 +44,59 @@ body {
     gap: 30px;
 }
 
+/* Header */
 .app-header {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin-bottom: 20px;
     animation: fadeIn 0.8s ease;
+    position: relative;
+    padding: 10px 0;
+}
+
+.header-left {
+    text-align: center;
+}
+
+.header-right {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#language-selector {
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    background: white;
+    font-family: var(--font-main);
+    font-size: 14px;
+    color: var(--text-main);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+@media (max-width: 400px) {
+    .app-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .header-right {
+        position: static;
+        transform: none;
+    }
+}
+
+#language-selector:hover {
+    border-color: var(--primary);
 }
 
 .logo {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--primary);
     letter-spacing: -0.5px;

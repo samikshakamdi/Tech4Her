@@ -13,8 +13,17 @@
     <div class="main-container">
         <!-- Header -->
         <header class="app-header">
-            <div class="logo">🛡️ Assist++</div>
-            <p class="tagline">Digital Safety Companion</p>
+            <div class="header-left">
+                <div class="logo" data-i18n="appTitle">🛡️ Assist++</div>
+                <p class="tagline" data-i18n="tagline">Digital Safety Companion</p>
+            </div>
+            <div class="header-right">
+                <select id="language-selector" onchange="changeLanguage(this.value)">
+                    <option value="en">English</option>
+                    <option value="hi">हिंदी</option>
+                    <option value="mr">मराठी</option>
+                </select>
+            </div>
         </header>
 
         <!-- Wizard Container -->
@@ -23,15 +32,16 @@
             <!-- Step 1: Input -->
             <div class="wizard-step active" id="step-input">
                 <div class="step-header">
-                    <h2>Analyze Suspicious Message</h2>
-                    <p>Paste the text below to detect scams & threats.</p>
+                    <h2 data-i18n="stepInputHeader">Analyze Suspicious Message</h2>
+                    <p data-i18n="stepInputDesc">Paste the text below to detect scams & threats.</p>
                 </div>
                 <div class="input-area">
-                    <textarea id="messageInput" placeholder="Paste the suspicious message here..."></textarea>
+                    <textarea id="messageInput" data-i18n-placeholder="placeholder"
+                        placeholder="Paste the suspicious message here..."></textarea>
                 </div>
                 <div class="actions">
-                    <button class="btn btn-primary" onclick="startAnalysis()">Analyze Risk</button>
-                    <!-- Small toggle to switch to link scan if needed, or just keep link scan below -->
+                    <button class="btn btn-primary" onclick="startAnalysis()" data-i18n="analyzeBtn">Analyze
+                        Risk</button>
                 </div>
             </div>
 
@@ -39,28 +49,30 @@
             <div class="wizard-step" id="step-threat-check">
                 <div class="step-header">
                     <div class="icon-warning">⚠️</div>
-                    <h2>Potential Sensitive Threat</h2>
-                    <p>Does this message threaten to share your private photos or videos?</p>
+                    <h2 data-i18n="threatHeader">Potential Sensitive Threat</h2>
+                    <p data-i18n="threatDesc">Does this message threaten to share your private photos or videos?</p>
                 </div>
                 <div class="actions row">
-                    <button class="btn btn-danger" onclick="confirmThreat(true)">YES, it does</button>
-                    <button class="btn btn-secondary" onclick="confirmThreat(false)">NO, it doesn't</button>
+                    <button class="btn btn-danger" onclick="confirmThreat(true)" data-i18n="yesBtn">YES, it
+                        does</button>
+                    <button class="btn btn-secondary" onclick="confirmThreat(false)" data-i18n="noBtn">NO, it
+                        doesn't</button>
                 </div>
             </div>
 
             <!-- Step 3: Risk Overview -->
             <div class="wizard-step" id="step-result-overview">
                 <div class="step-header">
-                    <h2 id="risk-level-display">Risk Analysis</h2>
-                    <p id="risk-summary">One moment...</p>
+                    <h2 id="risk-level-display" data-i18n="riskHeader">Risk Analysis</h2>
+                    <p id="risk-summary" data-i18n="analyzing">One moment...</p>
                 </div>
                 <div class="risk-details-card">
                     <div class="risk-metric">
-                        <span class="label">Risk Level</span>
+                        <span class="label" data-i18n="riskLabel">Risk Level</span>
                         <span class="value" id="risk-level-value">High</span>
                     </div>
                     <div class="risk-metric">
-                        <span class="label">Primary Type</span>
+                        <span class="label" data-i18n="typeLabel">Primary Type</span>
                         <span class="value" id="risk-type-value">Financial Scam</span>
                     </div>
                 </div>
@@ -68,55 +80,64 @@
                     <!-- Dynamic content -->
                 </div>
                 <div class="actions">
-                    <button class="btn btn-primary" onclick="nextStep('step-guidance')">Next: What should I do?</button>
-                    <button class="btn btn-text" onclick="resetWizard()">Start Over</button>
+                    <button class="btn btn-primary" onclick="nextStep('step-guidance')"
+                        data-i18n="nextGuidanceBtn">Next: What should I do?</button>
+                    <button class="btn btn-text" onclick="resetWizard()" data-i18n="startOverBtn">Start Over</button>
                 </div>
             </div>
 
             <!-- Step 4: Guidance -->
             <div class="wizard-step" id="step-guidance">
                 <div class="step-header">
-                    <h2>Recommended Actions</h2>
-                    <p>Follow these steps to stay safe.</p>
+                    <h2 data-i18n="guidanceHeader">Recommended Actions</h2>
+                    <p data-i18n="guidanceDesc">Follow these steps to stay safe.</p>
                 </div>
                 <ul class="guidance-list" id="guidance-list">
                     <!-- Dynamic list -->
                 </ul>
                 <div class="actions">
-                    <button class="btn btn-primary" onclick="nextStep('step-report')">Next: Report Template</button>
-                    <button class="btn btn-secondary" onclick="prevStep('step-result-overview')">Back</button>
+                    <button class="btn btn-primary" onclick="nextStep('step-report')" data-i18n="nextReportBtn">Next:
+                        Report Template</button>
+                    <button class="btn btn-secondary" onclick="prevStep('step-result-overview')"
+                        data-i18n="backBtn">Back</button>
                 </div>
             </div>
 
             <!-- Step 5: Report -->
             <div class="wizard-step" id="step-report">
                 <div class="step-header">
-                    <h2>Report Template</h2>
-                    <p>Use this generated text to report to authorities or platforms.</p>
+                    <h2 data-i18n="reportHeader">Report Template</h2>
+                    <p data-i18n="reportDesc">Use this generated text to report to authorities or platforms.</p>
                 </div>
                 <div class="report-box">
                     <textarea id="report-text" readonly></textarea>
                     <button class="btn-icon" onclick="copyReport()" title="Copy to Clipboard">📋</button>
                 </div>
+
                 <div class="actions column">
-                    <button class="btn btn-primary" onclick="downloadSummary()">Download Summary POF</button>
-                    <button class="btn btn-text" onclick="resetWizard()">Analyze Another Message</button>
+                    <button class="btn btn-primary" onclick="downloadSummary()" data-i18n="downloadBtn">Download Summary
+                        PDF</button>
+                    <button class="btn btn-text" onclick="resetWizard()" data-i18n="analyzeAnotherBtn">Analyze Another
+                        Message</button>
                 </div>
+
+
             </div>
 
         </div>
 
         <!-- Link Scan (Mini Version) -->
         <div class="mini-tool" id="link-scan-section">
-            <h3>Or scan a profile link</h3>
+            <h3 data-i18n="miniToolHeader">Or scan a profile link</h3>
             <div class="input-row">
                 <input type="text" id="linkInput" placeholder="https://example.com/profile" />
-                <button class="btn btn-small" onclick="scanLink()">Check</button>
+                <button class="btn btn-small" onclick="scanLink()" data-i18n="checkBtn">Check</button>
             </div>
         </div>
 
     </div>
 
+    <script src="translations.js"></script>
     <script src="app.js"></script>
 </body>
 
