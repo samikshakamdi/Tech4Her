@@ -84,7 +84,14 @@ const TRANSLATIONS = {
             emptyMessage: "Please paste a message first.",
             linkComingSoon: "Safety scan functionality for links is coming soon! For now, please verify URLs manually.",
             enterLink: "Please enter a link",
-            copied: "Report copied to clipboard!"
+            copied: "Report copied to clipboard!",
+            linkSafeHead: "✅ Verified Platform Link",
+            linkSafeDesc: "This looks like a valid link to a known platform. Verify the user's badges.",
+            linkSuspiciousHead: "⚠️ Suspicious Link Detected",
+            linkSuspiciousDesc: "This URL contains a platform name but does not match the official domain. Be very careful!",
+            linkCautionHead: "❓ Unknown Domain",
+            linkCautionDesc: "This is not a known social platform. It might be a phishing site.",
+            linkInvalid: "❌ Invalid URL format"
         }
     },
     hi: {
@@ -172,7 +179,14 @@ const TRANSLATIONS = {
             emptyMessage: "कृपया पहले एक संदेश पेस्ट करें।",
             linkComingSoon: "लिंक स्कैन सुविधा जल्द आ रही है! अभी के लिए, कृपया मैन्युअल रूप से URL सत्यापित करें।",
             enterLink: "कृपया एक लिंक दर्ज करें",
-            copied: "रिपोर्ट क्लिपबोर्ड पर कॉपी की गई!"
+            copied: "रिपोर्ट क्लिपबोर्ड पर कॉपी की गई!",
+            linkSafeHead: "✅ सत्यापित प्लेटफार्म लिंक",
+            linkSafeDesc: "यह एक ज्ञात प्लेटफार्म का वैध लिंक है। कृपया यूजर के बैज की जांच करें।",
+            linkSuspiciousHead: "⚠️ संदिग्ध लिंक पाया गया",
+            linkSuspiciousDesc: "इस URL में प्लेटफार्म का नाम है, लेकिन यह आधिकारिक डोमेन नहीं है। सावधान रहें!",
+            linkCautionHead: "❓ अज्ञात डोमेन",
+            linkCautionDesc: "यह कोई ज्ञात सोशल प्लेटफार्म नहीं है। यह एक फिशिंग साइट हो सकती है।",
+            linkInvalid: "❌ अमान्य URL प्रारूप"
         }
     },
     mr: {
@@ -260,7 +274,14 @@ const TRANSLATIONS = {
             emptyMessage: "कृपया आधी संदेश पेस्ट करा.",
             linkComingSoon: "लिंक स्कॅन सुविधा लवकरच येत आहे! सध्यासाठी, कृपया स्वतः URL तपासा.",
             enterLink: "कृपया लिंक एंटर करा",
-            copied: "रिपोर्ट क्लिपबोर्डवर कॉपी केला!"
+            copied: "रिपोर्ट क्लिपबोर्डवर कॉपी केला!",
+            linkSafeHead: "✅ सत्यापित प्लॅटफॉर्म लिंक",
+            linkSafeDesc: "ही एक ज्ञात प्लॅटफॉर्मची वैध लिंक आहे. कृपया यूजरचे बॅज तपासा.",
+            linkSuspiciousHead: "⚠️ संशयास्पद लिंक आढळली",
+            linkSuspiciousDesc: "या URL मध्ये प्लॅटफॉर्मचे नाव आहे, परंतु हे अधिकृत डोमेन नाही. अत्यंत सावध रहा!",
+            linkCautionHead: "❓ अज्ञात डोमेन",
+            linkCautionDesc: "हे कोणतेही ज्ञात सोशल प्लॅटफॉर्म नाही. ही एक फिशिंग साइट असू शकते.",
+            linkInvalid: "❌ अमान्य URL फॉरमॅट"
         }
     }
 };

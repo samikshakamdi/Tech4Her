@@ -17,17 +17,18 @@
                 <div class="logo" data-i18n="appTitle">🛡️ Assist++</div>
                 <p class="tagline" data-i18n="tagline">Digital Safety Companion</p>
             </div>
-            <div class="header-right">
+
+        </header>
+
+        <!-- Wizard Container -->
+        <div class="wizard-container" id="wizard">
+            <div class="language-switcher">
                 <select id="language-selector" onchange="changeLanguage(this.value)">
                     <option value="en">English</option>
                     <option value="hi">हिंदी</option>
                     <option value="mr">मराठी</option>
                 </select>
             </div>
-        </header>
-
-        <!-- Wizard Container -->
-        <div class="wizard-container" id="wizard">
 
             <!-- Step 1: Input -->
             <div class="wizard-step active" id="step-input">
@@ -133,11 +134,13 @@
                 <input type="text" id="linkInput" placeholder="https://example.com/profile" />
                 <button class="btn btn-small" onclick="scanLink()" data-i18n="checkBtn">Check</button>
             </div>
+            <div id="link-result-container" class="link-result-container"></div>
         </div>
 
     </div>
 
     <script src="translations.js"></script>
+    <script src="share-handler.js"></script>
     <script src="app.js"></script>
 </body>
 

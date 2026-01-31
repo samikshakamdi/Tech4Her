@@ -44,59 +44,14 @@ body {
     gap: 30px;
 }
 
-/* Header */
 .app-header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    text-align: center;
     margin-bottom: 20px;
     animation: fadeIn 0.8s ease;
-    position: relative;
-    padding: 10px 0;
-}
-
-.header-left {
-    text-align: center;
-}
-
-.header-right {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-#language-selector {
-    padding: 8px 12px;
-    border-radius: 12px;
-    border: 1px solid #ddd;
-    background: white;
-    font-family: var(--font-main);
-    font-size: 14px;
-    color: var(--text-main);
-    cursor: pointer;
-    outline: none;
-    transition: all 0.2s;
-}
-
-@media (max-width: 400px) {
-    .app-header {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .header-right {
-        position: static;
-        transform: none;
-    }
-}
-
-#language-selector:hover {
-    border-color: var(--primary);
 }
 
 .logo {
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
     color: var(--primary);
     letter-spacing: -0.5px;
@@ -433,4 +388,78 @@ textarea:focus {
     .step-header h2 {
         font-size: 20px;
     }
+
+}
+
+/* --- Language Switcher --- */
+.language-switcher {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+}
+
+.language-switcher select {
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-main);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.language-switcher select:hover {
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Link Scan Results --- */
+.link-result-container {
+    margin-top: 15px;
+    text-align: left;
+}
+
+.link-result-card {
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    animation: fadeIn 0.4s;
+}
+
+.link-result-card.safe {
+    background: #e6fffa;
+    border: 1px solid #b2f5ea;
+    color: #2c7a7b;
+}
+
+.link-result-card.suspicious {
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    color: #c53030;
+}
+
+.link-result-card.caution {
+    background: #fffaf0;
+    border: 1px solid #fbd38d;
+    color: #c05621;
+}
+
+.link-title {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.link-desc {
+    font-size: 13px;
+    opacity: 0.9;
 }

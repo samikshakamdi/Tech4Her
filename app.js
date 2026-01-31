@@ -2,9 +2,8 @@
 let currentLanguage = localStorage.getItem('appLanguage') || 'en';
 document.getElementById('language-selector').value = currentLanguage;
 
-/************************************
- * CONFIGURATION & DATASETS
- ************************************/
+//CONFIGURATION & DATASETS
+
 
 const WEIGHTS = { threat: 4, photo: 5, money: 3, scam: 2 };
 
@@ -18,9 +17,8 @@ let currentAnalysis = {
     userConfirmedThreat: false
 };
 
-/************************************
- * INTERNATIONALIZATION (I18N)
- ************************************/
+//INTERNATIONALIZATION (I18N)
+
 
 function changeLanguage(lang) {
     currentLanguage = lang;
@@ -54,9 +52,8 @@ function applyTranslations() {
 // Apply on load
 applyTranslations();
 
-/************************************
- * WIZARD NAVIGATION
- ************************************/
+//WIZARD NAVIGATION
+
 
 function showStep(stepId) {
     // Hide all steps
@@ -87,9 +84,8 @@ function resetWizard() {
     showStep('step-input');
 }
 
-/************************************
- * CORE ANALYSIS LOGIC
- ************************************/
+//CORE ANALYSIS LOGIC
+
 
 function startAnalysis() {
     const message = document.getElementById("messageInput").value.trim();
@@ -157,13 +153,10 @@ function finalizeAnalysis() {
     nextStep('step-result-overview');
 }
 
-/************************************
- * RENDERING RESULTS
- ************************************/
+//RENDERING RESULTS
 
-/************************************
- * RENDERING RESULTS
- ************************************/
+//RENDERING RESULTS
+
 
 function renderResults() {
     const t = TRANSLATIONS[currentLanguage];
@@ -288,9 +281,8 @@ function generateReportText() {
     return text;
 }
 
-/************************************
- * UTILITIES
- ************************************/
+//UTILITIES
+
 
 function copyReport() {
     const copyText = document.getElementById("report-text");
@@ -313,8 +305,99 @@ function downloadSummary() {
     document.body.removeChild(anchor);
 }
 
+/************************************
+ * LINK SCANNER LOGIC
+ ************************************/
+
 function scanLink() {
-    const link = document.getElementById('linkInput').value;
-    if (!link) return alert(TRANSLATIONS[currentLanguage].alerts.enterLink);
-    alert(TRANSLATIONS[currentLanguage].alerts.linkComingSoon);
+    const linkInput = document.getElementById('linkInput');
+    const resultContainer = document.getElementById('link-result-container');
+    const url = linkInput.value.trim();
+    const t = TRANSLATIONS[currentLanguage];
+
+    if (!url) return alert(t.alerts.enterLink);
+
+    // clear previous
+    resultContainer.innerHTML = '';
+
+    // Analysis
+    let result = analyzeLink(url);
+
+    // Render Result
+    const card = document.createElement('div');
+    card.className = `link-result-card ${result.status}`;
+
+    let titleText = "", descText = "";
+
+    if (result.status === 'safe') {
+        titleText = t.alerts.linkSafeHead;
+        descText = t.alerts.linkSafeDesc;
+    } else if (result.status === 'suspicious') {
+        titleText = t.alerts.linkSuspiciousHead;
+        descText = t.alerts.linkSuspiciousDesc;
+    } else if (result.status === 'caution') {
+        titleText = t.alerts.linkCautionHead;
+        descText = t.alerts.linkCautionDesc;
+    } else {
+        // Invalid or error
+        titleText = t.alerts.linkInvalid;
+        descText = "";
+    }
+
+    card.innerHTML = `
+        <div class="link-title">${titleText}</div>
+        <div class="link-desc">${descText}</div>
+    `;
+
+    resultContainer.appendChild(card);
+}
+
+function analyzeLink(urlStr) {
+    try {
+        // Basic protocol check
+        if (!urlStr.startsWith('http')) {
+            urlStr = 'https://' + urlStr;
+        }
+
+        const url = new URL(urlStr);
+        const domain = url.hostname.toLowerCase().replace('www.', '');
+
+        // Official Social Domains
+        const OFFICIAL_DOMAINS = [
+            'facebook.com', 'fb.com',
+            'instagram.com',
+            'twitter.com', 'x.com',
+            'linkedin.com',
+            'whatsapp.com', 'wa.me',
+            't.me', 'telegram.org',
+            'snapchat.com',
+            'youtube.com', 'youtu.be',
+            'tiktok.com'
+        ];
+
+        // Suspicious keywords in domain (if not official)
+        const SUSPICIOUS_KEYWORDS = [
+            'instagram', 'facebook', 'whatsapp', 'support', 'verify',
+            'login', 'secure', 'account', 'update', 'service'
+        ];
+
+        // 1. Check if it's an official domain
+        if (OFFICIAL_DOMAINS.includes(domain)) {
+            // It's a real social platform
+            return { status: 'safe' };
+        }
+
+        // 2. Check for phishing attempts (keywords in non-official domain)
+        // e.g. "instagram-verify-account.com"
+        const isPhishing = SUSPICIOUS_KEYWORDS.some(keyword => domain.includes(keyword));
+        if (isPhishing) {
+            return { status: 'suspicious' };
+        }
+
+        // 3. Unknown domain
+        return { status: 'caution' };
+
+    } catch (e) {
+        return { status: 'invalid' };
+    }
 }
