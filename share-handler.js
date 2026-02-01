@@ -24,6 +24,11 @@ window.addEventListener('DOMContentLoaded', () => {
             // Optional: Visually highlight that data arrived
             input.style.borderColor = "var(--primary)";
             setTimeout(() => input.style.borderColor = "", 2000);
+
+            // Auto-run analysis
+            if (typeof startAnalysis === "function") {
+                startAnalysis();
+            }
         }
     }
 });
