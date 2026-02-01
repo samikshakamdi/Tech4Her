@@ -1,10 +1,14 @@
-const CACHE_NAME = "safety-cache-v5";
+const CACHE_NAME = "safety-cache-v6";
 const ASSETS = [
-    "/",
-    "/index.html",
-    "/style.css",
-    "/app.js",
-    "/translations.js"
+    "./",
+    "./index.html",
+    "./style.css",
+    "./app.js",
+    "./translations.js",
+    "./share-handler.js",
+    "./manifest.json",
+    "./icons/icon-192.png",
+    "./icons/icon-512.png"
 ];
 
 self.addEventListener("install", e => {
