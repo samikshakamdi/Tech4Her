@@ -214,6 +214,36 @@ function renderResults() {
         guidanceList.appendChild(li);
     });
 
+    // 2.1 Helpline Section
+    const helplineContainer = document.getElementById('helpline-container');
+    const helplines = t.helplines;
+    let helpData = helplines.general;
+
+    if (currentAnalysis.riskType === "sextortion") {
+        helpData = helplines.sextortion;
+    } else if (currentAnalysis.riskType === "scam") {
+        helpData = helplines.scam;
+    }
+
+    helplineContainer.innerHTML = `
+        <div class="helpline-card">
+            <div class="helpline-header">
+                <span>🏛️</span> ${helplines.title}
+            </div>
+            <div class="helpline-content">
+                <div class="helpline-number">
+                    <span class="label">${helpData.numberLabel}</span>
+                    <a href="tel:${helpData.number}" class="number">${helpData.number}</a>
+                </div>
+                <div class="helpline-link">
+                    <a href="${helpData.link}" target="_blank">
+                        ${helpData.linkLabel} ↗
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
+
     // 3. Report Screen
     const reportText = generateReportText();
     document.getElementById('report-text').value = reportText;
@@ -305,9 +335,8 @@ function downloadSummary() {
     document.body.removeChild(anchor);
 }
 
-/************************************
- * LINK SCANNER LOGIC
- ************************************/
+//LINK SCANNER LOGIC
+
 
 function scanLink() {
     const linkInput = document.getElementById('linkInput');

@@ -57,10 +57,30 @@ const TRANSLATIONS = {
                 { title: "Verify Source", desc: "Contact the official company/person through a trusted channel." }
             ],
             general: [
-                { title: "Ignore", desc: "Do not click links or reply." },
                 { title: "Delete", desc: "Remove the message from your device." },
                 { title: "Stay Alert", desc: "Watch out for similar follow-up messages." }
             ]
+        },
+        helplines: {
+            title: "Official Helplines & Reporting",
+            sextortion: {
+                number: "112",
+                numberLabel: "Emergency / Police",
+                link: "https://cybercrime.gov.in",
+                linkLabel: "National Cyber Crime Portal"
+            },
+            scam: {
+                number: "1930",
+                numberLabel: "Cyber Fraud Helpline",
+                link: "https://cybercrime.gov.in",
+                linkLabel: "Report Financial Fraud"
+            },
+            general: {
+                number: "112",
+                numberLabel: "Police Helpline",
+                link: "https://cybercrime.gov.in",
+                linkLabel: "Cyber Crime Portal"
+            }
         },
         report: {
             dateLabel: "Date of Incident",
@@ -152,10 +172,30 @@ const TRANSLATIONS = {
                 { title: "स्रोत की पुष्टि करें", desc: "भरोसेमंद चैनल के माध्यम से आधिकारिक कंपनी/व्यक्ति से संपर्क करें।" }
             ],
             general: [
-                { title: "अनदेखा करें", desc: "लिंक पर क्लिक न करें और जवाब न दें।" },
                 { title: "हटाएं", desc: "संदेह को अपने डिवाइस से हटा दें।" },
                 { title: "सतर्क रहें", desc: "इसी तरह के फॉलो-अप संदेशों से सावधान रहें।" }
             ]
+        },
+        helplines: {
+            title: "सरकारी हेल्पलाइन और रिपोर्टिंग",
+            sextortion: {
+                number: "112",
+                numberLabel: "पुलिस हेल्पलाइन",
+                link: "https://cybercrime.gov.in",
+                linkLabel: "राष्ट्रीय साइबर अपराध पोर्टल"
+            },
+            scam: {
+                number: "1930",
+                numberLabel: "साइबर धोखाधड़ी हेल्पलाइन",
+                link: "https://cybercrime.gov.in",
+                linkLabel: "वित्तीय धोखाधड़ी रिपोर्ट करें"
+            },
+            general: {
+                number: "112",
+                numberLabel: "पुलिस हेल्पलाइन",
+                link: "https://cybercrime.gov.in",
+                linkLabel: "साइबर अपराध पोर्टल"
+            }
         },
         report: {
             dateLabel: "घटना की तारीख (Date of Incident)",
@@ -247,10 +287,30 @@ const TRANSLATIONS = {
                 { title: "स्रोताची खात्री करा", desc: "अधिकृत कंपनी/व्यक्तीशी विश्वासार्ह चॅनेलद्वारे संपर्क साधा." }
             ],
             general: [
-                { title: "दुर्लक्ष करा", desc: "लिंकवर क्लिक करू नका आणि उत्तर देऊ नका." },
                 { title: "हटवा", desc: "तुमच्या डिव्हाइसवरून संदेश काढून टाका." },
                 { title: "सतर्क रहा", desc: "अशाच प्रकारच्या फॉलो-अप संदेशांपासून सावध रहा." }
             ]
+        },
+        helplines: {
+            title: "सरकारी हेल्पलाइन आणि रिपोर्टिंग",
+            sextortion: {
+                number: "112",
+                numberLabel: "पोलीस हेल्पलाइन",
+                link: "https://cybercrime.gov.in",
+                linkLabel: "राष्ट्रीय सायबर क्राइम पोर्टल"
+            },
+            scam: {
+                number: "1930",
+                numberLabel: "सायबर फसवणूक हेल्पलाइन",
+                link: "https://cybercrime.gov.in",
+                linkLabel: "आर्थिक फसवणूक रिपोर्ट करा"
+            },
+            general: {
+                number: "112",
+                numberLabel: "पोलीस हेल्पलाइन",
+                link: "https://cybercrime.gov.in",
+                linkLabel: "सायबर क्राइम पोर्टल"
+            }
         },
         report: {
             dateLabel: "घटनेची तारीख (Date of Incident)",

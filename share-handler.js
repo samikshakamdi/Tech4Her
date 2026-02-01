@@ -1,7 +1,6 @@
 
-/************************************
- * SHARE TARGET HANDLER
- ************************************/
+//SHARE TARGET HANDLER
+
 
 window.addEventListener('DOMContentLoaded', () => {
     // Check for "Share Target" data (GET params)
