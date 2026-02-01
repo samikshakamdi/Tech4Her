@@ -430,3 +430,178 @@ function analyzeLink(urlStr) {
         return { status: 'invalid' };
     }
 }
+
+function continueAsGuest() {
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("signupPage").style.display = "none";
+    document.getElementById("homePage").style.display = "flex";
+}
+
+function showLogin() {
+    document.getElementById("loginPage").style.display = "flex";
+    document.getElementById("signupPage").style.display = "none";
+    document.getElementById("homePage").style.display = "none";
+}
+
+function showSignup() {
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("signupPage").style.display = "flex";
+    document.getElementById("homePage").style.display = "none";
+}
+
+// AUTHENTICATION LOGIC
+function handleSignup() {
+    const nameInput = document.getElementById("signupName");
+    const name = nameInput.value.trim();
+
+    if (name) {
+        loginUser(name);
+    } else {
+        alert("Please enter your name.");
+    }
+}
+
+function handleLoginAction() {
+    const emailInput = document.getElementById("loginEmail");
+    const email = emailInput.value.trim();
+
+    if (email) {
+        // Extract name from email (e.g., "john" from "john@example.com")
+        const name = email.split('@')[0];
+        // Capitalize first letter
+        const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+        loginUser(formattedName);
+    } else {
+        alert("Please enter your email.");
+    }
+}
+
+function loginUser(name) {
+    // 1. Update Header
+    const headerBtn = document.getElementById("headerLoginBtn");
+    headerBtn.innerText = name;
+    headerBtn.onclick = null;
+    document.getElementById("headerLogoutBtn").style.display = "block";
+
+    // 2. Hide Login/Signup, Show Home
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("signupPage").style.display = "none";
+    document.getElementById("homePage").style.display = "flex";
+}
+
+function logoutUser() {
+    // 1. Reset Header
+    const headerBtn = document.getElementById("headerLoginBtn");
+    headerBtn.innerText = "Login";
+    headerBtn.onclick = showLogin;
+
+    // 2. Hide Logout Button
+    document.getElementById("headerLogoutBtn").style.display = "none";
+
+    // 3. Return to Login Page
+    showLogin();
+}
+
+// GOOGLE API CONFIGURATION
+const CLIENT_ID = '349148392724-pc3dgakslp9hbcq0st34f2tn0b01l0c1.apps.googleusercontent.com';
+const API_KEY = 'AIzaSyA-_d9UVONFVW6I23n_H5T2ar7NYAYrUnA'; // User provided API Key
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest';
+const SCOPES = 'https://www.googleapis.com/auth/gmail.readonly';
+
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
+
+// Initialize Google API Client
+window.gapiLoaded = function () {
+    gapi.load('client', intializeGapiClient);
+}
+
+async function intializeGapiClient() {
+    await gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs: [DISCOVERY_DOC],
+    });
+    gapiInited = true;
+}
+
+// Initialize Google Identity Services (GIS)
+window.gisLoaded = function () {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: '', // Defined at request time
+    });
+    gisInited = true;
+}
+
+// Auth & Scan Trigger
+window.handleAuthClick = function () {
+    console.log("Auth Clicked");
+    if (!gapiInited || !gisInited) {
+        // Try initializing again if scripts loaded late
+        if (typeof gapi !== 'undefined' && !gapiInited) gapiLoaded();
+        if (typeof google !== 'undefined' && !gisInited) gisLoaded();
+
+        // Give it a split second or alert
+        if (!gapiInited || !gisInited) return alert("Google APIs not fully loaded. Please check your internet or tokens.");
+    }
+
+    tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+            throw (resp);
+        }
+        await checkSpamStats();
+    };
+
+    if (gapi.client.getToken() === null) {
+        tokenClient.requestAccessToken({ prompt: 'consent' });
+    } else {
+        tokenClient.requestAccessToken({ prompt: '' });
+    }
+}
+
+async function checkSpamStats() {
+    const resultDiv = document.getElementById("email-stats-result");
+    resultDiv.style.display = 'block';
+    resultDiv.innerText = "Scanning Gmail...";
+    resultDiv.style.color = "#666";
+
+    try {
+        // Get today's date in YYYY/MM/DD format
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const dateQuery = `${yyyy}/${mm}/${dd}`;
+
+        const query = `label:SPAM after:${dateQuery}`;
+
+        const response = await gapi.client.gmail.users.messages.list({
+            'userId': 'me',
+            'q': query
+        });
+
+        const messages = response.result.messages || [];
+        const count = messages.length;
+
+        resultDiv.innerText = `You received ${count} spam emails today.`;
+
+        if (count > 0) {
+            resultDiv.style.color = "#FF4757"; // Danger color
+        } else {
+            resultDiv.style.color = "#2ED573"; // Success color
+        }
+
+    } catch (err) {
+        console.error(err);
+        resultDiv.innerText = "Error scanning email: " + err.message;
+        resultDiv.style.color = "red";
+    }
+}
+
+// Auto-initialize if scripts are loaded
+window.onload = function () {
+    if (typeof gapi !== 'undefined') gapiLoaded();
+    if (typeof google !== 'undefined') gisLoaded();
+};

@@ -10,14 +10,64 @@
 
 <body>
 
-    <div class="main-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-left">
-                <div class="logo" data-i18n="appTitle">🛡️ Assist++</div>
-                <p class="tagline" data-i18n="tagline">Digital Safety Companion</p>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-wrapper">
+        <div class="login-card">
+            <h2 class="login-title">Welcome Back</h2>
+
+            <label>Email Address</label>
+            <input type="email" id="loginEmail" placeholder="name@example.com">
+
+            <label>Password</label>
+            <input type="password" placeholder="........">
+
+            <button class="login-btn" onclick="handleLoginAction()">Sign In</button>
+            <div class="login-text">
+                Don't have an account? <span class="signup" onclick="showSignup()">Sign Up</span>
             </div>
 
+            <button class="guest-btn" onclick="continueAsGuest()">Continue as Guest</button>
+        </div>
+    </div>
+
+    <div id="signupPage" class="login-wrapper" style="display: none;">
+        <div class="login-card">
+            <h2 class="login-title">Create Account</h2>
+
+            <label>Full Name</label>
+            <input type="text" id="signupName" placeholder="John Doe">
+
+            <label>Email Address</label>
+            <input type="email" placeholder="name@example.com">
+
+            <label>Password</label>
+            <input type="password" placeholder="Create a password">
+
+            <button class="login-btn" onclick="handleSignup()">Sign Up</button>
+            <div class="login-text">
+                Already have an account? <span class="signup" onclick="showLogin()">Sign In</span>
+            </div>
+
+            <button class="guest-btn" onclick="continueAsGuest()">Continue as Guest</button>
+        </div>
+    </div>
+
+    <div class="main-container" id="homePage" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content"
+                style="position: relative; display: flex; justify-content: center; align-items: center;">
+                <div class="header-left" style="text-align: center;">
+                    <div class="logo" data-i18n="appTitle">🛡️ Assist++</div>
+                    <p class="tagline" data-i18n="tagline">Digital Safety Companion</p>
+                </div>
+                <div style="position: absolute; right: 0; display: flex; align-items: center; gap: 15px;">
+                    <button class="btn-text" id="headerLoginBtn" onclick="showLogin()"
+                        style="font-weight: bold; color: var(--primary);">Login</button>
+                    <button class="btn-text" id="headerLogoutBtn" onclick="logoutUser()"
+                        style="display: none; font-weight: bold; color: #666;">Logout</button>
+                </div>
+            </div>
         </header>
 
         <!-- Wizard Container -->
@@ -138,8 +188,26 @@
             <div id="link-result-container" class="link-result-container"></div>
         </div>
 
+        <!-- Email Safety Scan (New Feature) -->
+        <div class="header-content" style="text-align: center; margin: 30px 0;">
+            <div class="wizard-container" style="min-height: auto; padding: 20px;">
+                <h3 style="color: var(--primary); margin-bottom: 15px;">📧 Email Safety Check</h3>
+                <p style="color: var(--text-muted); margin-bottom: 15px; font-size: 14px;">
+                    Connect your Gmail to see how many spam emails you received today.
+                </p>
+                <div id="email-stats-result"
+                    style="margin-bottom: 15px; font-weight: bold; font-size: 18px; display: none;"></div>
+                <button class="btn btn-primary" onclick="handleAuthClick()" style="max-width: 250px;">
+                    Check Spam Levels
+                </button>
+            </div>
+        </div>
+
     </div>
 
+    <!-- Google API Scripts -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js"></script>
     <script src="translations.js"></script>
     <script src="share-handler.js"></script>
     <script src="app.js"></script>
